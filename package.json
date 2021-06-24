@@ -1,0 +1,19 @@
+{
+  "name": "tollbooth",
+  "version": "1.0.0",
+  "description": "management system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nqobizitha30/tollbooth.git"
+  },
+  "author": "JUBA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nqobizitha30/tollbooth/issues"
+  },
+  "homepage": "https://github.com/Nqobizitha30/tollbooth#readme"
+}
