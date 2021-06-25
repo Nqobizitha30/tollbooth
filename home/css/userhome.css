@@ -1,0 +1,52 @@
+*   {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+body{
+    background: url('./../IMG/cars.jpg') no-repeat center;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: #0e173f;
+    height: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header h1 {
+    color: honeydew;
+    text-transform: capitalize;
+}
+main{
+    flex-grow: 1;
+    padding: 2rem;
+
+}
+.profile{
+    margin-bottom: 1rem;
+}
+
+.profile div{
+    width: 200px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid black;
+}
+.activity table{
+    width: 200px;
+}
+
+footer {
+    background: #0e173f;
+    color: honeydew;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
