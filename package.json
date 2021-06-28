@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/Nqobizitha30/tollbooth/issues"
   },
-  "homepage": "https://github.com/Nqobizitha30/tollbooth#readme"
+  "homepage": "https://github.com/Nqobizitha30/tollbooth#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.12.15",
+    "uuid": "^8.3.2"
+  }
 }

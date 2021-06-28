@@ -44,6 +44,11 @@
     <footer> 
         &copy; 2021 Tollbooth Management
     </footer>
-
+    <script>
+        window.addEventListener('load', async() => {
+            const currentUser = await  fetch('/tollbooth_current_user');
+            console.log(currentUser);
+        });
+    </script>
 </body>
 </html>
