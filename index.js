@@ -2,139 +2,146 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const qs = require("querystring");
- 
-/*
-const server = http.createServer(function(req,res){
+const users = require("./users");
+let tollbooth_current_user = null;
 
-    res.writeHead(200, {"Content-Type":"text/plain"});
-    res.end("hello world");
-
-});
-
-const PORT=process.env.PORT || 5000; 
-server.listen(PORT,function(){
-    console.log(`server started at port ${PORT}`)
-});*/
-
-let tollbooth_current_user;
-
-const server = http.createServer(function(req,res){
-   /* fs.readFile(path.join(__dirname, "public", "index.html"), function(err, page){
-        if(err) {
-            res.writeHead(400);
-            res.end("oops!")
-
+const server = http.createServer(function (req, res) {
+  switch (req.url) {
+    case "/":
+      tollbooth_current_user = null;
+      fs.readFile(
+        path.join(__dirname, "public", "index.html"),
+        function (err, page) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(page);
         }
-        else {
-            res.writeHead(200, {
-            "Content-Type":"text/html"
-            });
-            res.end(page);
+      );
+      break;
+
+    case "/css/style.css":
+      fs.readFile(
+        path.join(__dirname, "public", "css", "style.css"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/css" });
+          res.end(data);
         }
-    })*/
-    switch (req.url) {
-        case "/":
-            
-            fs.readFile(path.join(__dirname, "public", "index.html"), function(err, page){
-                if(err) {
-                    res.writeHead(400);
-                    res.end("oops!")
+      );
+      break;
 
-                }
-                else {
-                    res.writeHead(200, {
-                    "Content-Type":"text/html"
-                    });
-                    res.end(page);
-                }
+    case "/IMG/cars.jpg":
+      fs.readFile(
+        path.join(__dirname, "public", "IMG", "cars.jpg"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "image/jpg" });
+          res.end(data);
+        }
+      );
+      break;
+
+    case "/api/users/login":
+      if (req.method == "POST") {
+        let body = "";
+        req.on("data", function (data) {
+          body += data;
+        });
+        req.on("end", function () {
+          const formData = qs.parse(body);
+
+          if (
+            !users.some(function (user) {
+              return (
+                user.email == formData.email &&
+                user.password == formData.password
+              );
+            })
+          ) {
+            res.statusCode = 302;
+            res.setHeader("Location", "/");
+            return res.end();
+          } else {
+            users.forEach(function (user) {
+              if (
+                user.email == formData.email &&
+                user.password == formData.password
+              ) {
+                tollbooth_current_user = user;
+                res.statusCode = 302;
+                res.setHeader("Location", "/home");
+                return res.end();
+              }
             });
-            
-            break;
+          }
+        });
+      }
+      break;
 
-        case "/css/style.css":
-             fs.readFile(path.join(__dirname, "public", "css", "style.css"), function(err, data){
-                if(err) {
-                    res.writeHead(400);
-                    res.end("oops!")
+    case "/home":
+      if (tollbooth_current_user == null) {
+        res.statusCode = 302;
+        res.setHeader("Location", "/");
+        return res.end();
+      }
+      fs.readFile(
+        path.join(__dirname, "public", "home", "index.html"),
+        function (err, page) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(page);
+        }
+      );
+      break;
 
-                }
-                else {
-                    res.writeHead(200, {
-                    "Content-Type":"text/css"
-                    });
-                    res.end(data);
-                }
-            });
-            
-            break;
-    
-        case "/IMG/cars.jpg":
-             fs.readFile(path.join(__dirname, "public", "IMG", "cars.jpg"), function(err, data){
-                if(err) {
-                    res.writeHead(400);
-                    res.end("oops!")
+    case "/css/userhome.css":
+      fs.readFile(
+        path.join(__dirname, "public", "home", "css", "userhome.css"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/css" });
+          res.end(data);
+        }
+      );
+      break;
 
-                }
-                else {
-                    res.writeHead(200, {
-                    "Content-Type":"image/jpg"
-                    });
-                    res.end(data);
-                }
-            });
-            
-            break;
-        case "/api/users/login":
-             if(req.method == "POST"){
-                 let body = "";
-                 req.on("data", function(data){
-                     body += data;
-                 });
+    case "/js/main.js":
+      fs.readFile(
+        path.join(__dirname, "public", "home", "js", "main.js"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/javascript" });
+          res.end(data);
+        }
+      );
+      break;
 
-                 req.on("end", function(){
-                     const formData = qs.parse(body);
-                     tollbooth_current_user = formData;
-                     //redirect
-                     
-                 });
-                 res.statusCode=302;
-                     res.setHeader('Location','/profile');
-                     return res.end();
-             }
-            
-            break;
+    case "/tollbooth_current_user":
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(tollbooth_current_user));
+      break;
 
-            case '/profile':
-            fs.readFile(path.join(__dirname, "public", "home", "index.html"), function(err, page){
-                if(err) {
-                    res.writeHead(400);
-                    res.end("oops!")
-
-                }
-                else {
-                    res.writeHead(200, {
-                    "Content-Type":"text/html"
-                    });
-                   return res.end(page);
-                }
-            });
-
-            break;
-
-            case '/tollbooth_current_user':
-                res.writeHead(200, {
-                    "Content-Type":"text/json"
-                    });
-                res.end(JSON.stringify(tollbooth_current_user));
-                break;
-        default:
-            res.writeHead(404);
-            res.end("page not found");
-            break;
-    }
+    default:
+      res.writeHead(404);
+      res.end("404 not found");
+      break;
+  }
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT,function(){
-    console.log(`server started at port ${PORT}`)
-})
+
+server.listen(PORT, function () {
+  console.log("server started at port " + PORT);
+});

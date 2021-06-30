@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JUBA Tollbooth Management System</title>
-    <link rel="stylesheet" href="./css/userhome.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./css/userhome.css" />
+  </head>
+  <body>
     <header>
-        <h1>MY ACCOUNT</h1>
+      <h1>MY ACCOUNT</h1>
     </header>
     <main>
-        <section class="profile">
-            <h3>user profile</h3>
-            <div id="name">name: <span>juba nqo</span></div>
-            <div id="reg">reg number: <span>abc4803</span></div>
-            <div id="balance">balance: <span>80.40</span></div>
-        </section>
-       
-        <section class="activity">
-            <h3>activity</h3>
-            <table>
-                <tr>
-                    <td> bulawayo gwanda</td>
-                    <td>100.00</td>
-                </tr>
-                <tr>
-                    <td>harare chegutu</td>
-                    <td>40.30</td>
-                </tr>
-                <tr>
-                    <td> bulawayo gwanda</td>
-                    <td>19.00</td>
-                </tr>
-                <tr>
-                    <td>harare chegutu</td>
-                    <td>13.30</td>
-                </tr>
-            </table>
-        </section>
+      <section class="profile">
+        <h3>user profile</h3>
+        <div id="name">name: <span></span></div>
+        <div id="reg">reg number: <span></span></div>
+        <div id="balance">balance: <span></span></div>
+      </section>
+
+      <section class="activity">
+        <h3>activity</h3>
+        <table>
+          <tr>
+            <td>bulawayo gwanda</td>
+            <td>100.00</td>
+          </tr>
+          <tr>
+            <td>harare chegutu</td>
+            <td>40.30</td>
+          </tr>
+          <tr>
+            <td>bulawayo gwanda</td>
+            <td>19.00</td>
+          </tr>
+          <tr>
+            <td>harare chegutu</td>
+            <td>13.30</td>
+          </tr>
+        </table>
+      </section>
     </main>
-    <footer> 
-        &copy; 2021 Tollbooth Management
-    </footer>
-    <script>
-        window.addEventListener('load', async() => {
-            const currentUser = await  fetch('/tollbooth_current_user');
-            console.log(currentUser);
-        });
-    </script>
-</body>
+    <footer>&copy; 2021 Tollbooth Management</footer>
+    <script src="./js/main.js"></script>
+  </body>
 </html>
