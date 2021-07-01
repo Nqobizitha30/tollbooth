@@ -224,6 +224,11 @@ const server = http.createServer(function (req, res) {
       res.end(JSON.stringify(tollbooth_current_admin));
       break;
 
+    case "/tollbooth_users":
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(users));
+      break;
+
     default:
       res.writeHead(404);
       res.end("404 not found");

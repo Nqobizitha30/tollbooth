@@ -1,8 +1,10 @@
 window.addEventListener("load", async function () {
   const data = await fetch("/tollbooth_current_admin");
   const currentAdmin = await data.json();
+  const users = await fetch("/tollbooth_users");
+  const allUsers = await users.json();
   console.log(currentAdmin);
-  //display(currentUser);
+
   //displayActivity(currentUser.activity);
 });
 /* 
