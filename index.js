@@ -3,7 +3,9 @@ const fs = require("fs");
 const path = require("path");
 const qs = require("querystring");
 const users = require("./users");
+const admin = require("./admin");
 let tollbooth_current_user = null;
+let tollbooth_current_admin = null;
 
 const server = http.createServer(function (req, res) {
   switch (req.url) {
@@ -131,6 +133,95 @@ const server = http.createServer(function (req, res) {
     case "/tollbooth_current_user":
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(tollbooth_current_user));
+      break;
+
+    case "/admin":
+      tollbooth_current_admin = null;
+      fs.readFile(
+        path.join(__dirname, "public", "admin", "index.html"),
+        (err, page) => {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(page);
+        }
+      );
+      break;
+
+    case "/api/admin/login":
+      if (req.method == "POST") {
+        let body = "";
+        req.on("data", function (data) {
+          body += data;
+        });
+        req.on("end", function () {
+          const formData = qs.parse(body);
+
+          if (
+            admin.username != formData.username &&
+            admin.password != formData.password
+          ) {
+            res.statusCode = 302;
+            res.setHeader("Location", "/admin");
+            return res.end();
+          } else {
+            tollbooth_current_admin = admin;
+            res.statusCode = 302;
+            res.setHeader("Location", "/admin/home");
+            return res.end();
+          }
+        });
+      }
+      break;
+
+    case "/admin/home":
+      if (tollbooth_current_admin == null) {
+        res.statusCode = 302;
+        res.setHeader("Location", "/admin");
+        return res.end();
+      }
+      fs.readFile(
+        path.join(__dirname, "public", "admin", "home", "index.html"),
+        function (err, page) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(page);
+        }
+      );
+      break;
+
+    case "/admin/css/home.css":
+      fs.readFile(
+        path.join(__dirname, "public", "admin", "home", "css", "home.css"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/css" });
+          res.end(data);
+        }
+      );
+      break;
+
+    case "/admin/js/adminmain.js":
+      fs.readFile(
+        path.join(__dirname, "public", "admin", "home", "js", "adminmain.js"),
+        function (err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHead(200, { "Content-Type": "text/javascript" });
+          res.end(data);
+        }
+      );
+      break;
+
+    case "/tollbooth_current_admin":
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(tollbooth_current_admin));
       break;
 
     default:
