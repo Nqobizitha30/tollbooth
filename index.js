@@ -2,10 +2,39 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const qs = require("querystring");
-const users = require("./users");
-const admin = require("./admin");
+const mongoose = require("mongoose");
+require("dotenv").config();
 let tollbooth_current_user = null;
 let tollbooth_current_admin = null;
+
+//database uri
+const uri = process.env.DB_URI;
+
+//connect database
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+});
+
+const connection = mongoose.connection;
+connection.once("open", () =>
+  console.log("MongoDB database connection established successfully")
+);
+
+//database model
+const Admin = require("./model/admin.model");
+const User = require("./model/user.model");
+
+let users;
+User.find()
+  .then((data) => (users = data))
+  .catch((err) => console.log(err));
+
+let admin;
+Admin.find()
+  .then((admins) => (admin = admins[0]))
+  .catch((err) => console.log(err));
 
 const server = http.createServer(function (req, res) {
   switch (req.url) {

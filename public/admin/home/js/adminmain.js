@@ -1,41 +1,31 @@
 window.addEventListener("load", async function () {
   const data = await fetch("/tollbooth_current_admin");
   const currentAdmin = await data.json();
-  const users = await fetch("/tollbooth_users");
-  const allUsers = await users.json();
-  console.log(currentAdmin);
-
-  //displayActivity(currentUser.activity);
+  displayName(currentAdmin.boothName);
+  displayHistory(currentAdmin.history);
 });
-/* 
-  function display(currentUser) {
-    //display currentUser name
-    const nameContainer = document.querySelector("#name span");
-    nameContainer.textContent = currentUser.name;
-    //display currentUser reg number
-    const regContainer = document.querySelector("#reg span");
-    regContainer.textContent = currentUser.regNumber;
-    //display currentUser balance
-    const balanceContainer = document.querySelector("#balance span");
-    balanceContainer.textContent = currentUser.balance;
-  }
-  
-  function displayActivity(activities) {
-    //make table row
-    for (let activity of activities) {
-      const tableRow = document.createElement("tr");
-      const boothColumn = document.createElement("td");
-      const amaountColumn = document.createElement("td");
-  
-      //input data
-      boothColumn.textContent = activity.boothName;
-      amaountColumn.textContent = activity.amount;
-      //linking td-tr
-      tableRow.appendChild(boothColumn);
-      tableRow.appendChild(amaountColumn);
-      //linking table row to html table
-      const table = document.querySelector(".activity table");
-      table.appendChild(tableRow);
-    }
-  }
-  */
+
+const displayName = (name) =>
+  (document.getElementById("booth-name").textContent = name);
+
+const displayHistory = async (history) => {
+  history.forEach((element, index) => {
+    const row = document.createElement("tr");
+    const countColumn = document.createElement("td");
+    const nameColumn = document.createElement("td");
+    const regColumn = document.createElement("td");
+    const amountColumn = document.createElement("td");
+
+    amountColumn.textContent = element.amount;
+    countColumn.textContent = index + 1;
+    nameColumn.textContent = element.user.name;
+    regColumn.textContent = element.user.regNumber;
+
+    row.appendChild(countColumn);
+    row.appendChild(nameColumn);
+    row.appendChild(regColumn);
+    row.appendChild(amountColumn);
+
+    document.querySelector("tbody").appendChild(row);
+  });
+};
