@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Home Tollbooth Management System</title>
-    <link rel="stylesheet" href="./css/home.css" />
-  </head>
-  <body>
-    <header>
-      <h1><span id="booth-name"></span> TOLLBOOTH</h1>
-    </header>
-    <main>
-      <table>
-        <thead>
-          <tr>
-            <td>user</td>
-            <td>account name</td>
-            <td>REG NUMBER</td>
-            <td>amount</td>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </main>
-    <footer>&copy; 2021 Tollbooth Management</footer>
-    <script src="./js/adminmain.js"></script>
-  </body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Admin Home Tollbooth Management System</title>
+		<link rel="stylesheet" href="./css/home.css" />
+		<script>
+			fetch("/api/user/logout", { method: "POST" });
+		</script>
+	</head>
+	<body>
+		<header>
+			<h1><span id="booth-name"></span> TOLLBOOTH</h1>
+		</header>
+		<main>
+			<table>
+				<thead>
+					<tr>
+						<td>user</td>
+						<td>account name</td>
+						<td>REG NUMBER</td>
+						<td>amount</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</main>
+		<footer>&copy; 2021 Tollbooth Management</footer>
+		<script src="./js/adminmain.js"></script>
+	</body>
 </html>
