@@ -12,6 +12,10 @@ body{
     flex-direction: column;
 }
 
+.btn {
+    cursor: pointer;
+}
+
 header {
     background: #0e173f;
     height: 5rem;
@@ -24,7 +28,7 @@ header h1 {
     color: honeydew;
     text-transform: capitalize;
 }
-/* vomment */
+/* comment */
 
 main{
     flex-grow: 1;
