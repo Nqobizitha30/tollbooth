@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>New User Registration - Tollbooth Management System</title>
+		<link rel="stylesheet" href="/api/users/register/style.css" />
+	</head>
+	<body>
+		<header>
+			<h1>New User Registration</h1>
+		</header>
+		<main>
+			<form method="post" action="/api/users/register">
+				<div>
+					<input
+						type="text"
+						id="_id"
+						name="_id"
+						placeholder="ID"
+						class="offscreen"
+					/>
+					<input type="text" name="name" placeholder="NAME" required />
+					<input type="email" name="email" placeholder="EMAIL" required />
+					<input
+						type="tel"
+						name="userPhone"
+						placeholder="PHONE NUMBER"
+						required
+					/>
+					<input
+						type="text"
+						name="regNumber"
+						placeholder="Reg. Number"
+						required
+					/>
+					<input
+						type="password"
+						name="password"
+						placeholder="PASSWORD"
+						required
+					/>
+					<input type="submit" value="Register" class="btn" />
+				</div>
+			</form>
+		</main>
+		<footer>
+			<p>&copy; 2021 tollbooth management</p>
+		</footer>
+		<script>
+			fetch("/tollbooth_new_user_id").then((data) => {
+				data
+					.text()
+					.then(
+						(newUserId) => (document.getElementById("_id").value = newUserId)
+					);
+			});
+
+			//document.getElementById("_id").value = 123;
+			//console.log(document.getElementById("_id").value);
+		</script>
+	</body>
+</html>

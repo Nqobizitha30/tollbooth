@@ -1,272 +1,212 @@
-const http = require("http");
-const fs = require("fs");
+const express = require("express");
 const path = require("path");
-const qs = require("querystring");
 const mongoose = require("mongoose");
-require("dotenv").config();
-let tollbooth_current_user = null;
-let tollbooth_current_admin = null;
 
-//database uri
+// Allow env variables to be stored in a .env file
+require("dotenv").config();
+
+const app = express();
+
+// Body Parser Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Database URI
 const uri = process.env.DB_URI;
 
-//connect database
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
 });
 
+// Connect database
 const connection = mongoose.connection;
 connection.once("open", () =>
-  console.log("MongoDB database connection established successfully")
+  console.log("MongoDB database connection established successfully\n")
 );
 
 //database model
 const Admin = require("./model/admin.model");
 const User = require("./model/user.model");
 
-let users;
-User.find()
-  .then((data) => (users = data))
-  .catch((err) => console.log(err));
+let tollbooth_current_user = null;
+let tollbooth_current_admin = null;
+let tollbooth_new_user_id = null;
 
-let admin;
-Admin.find()
-  .then((admins) => (admin = admins[0]))
-  .catch((err) => console.log(err));
+// Set static folder
+app.use(express.static(path.join(__dirname, "public")));
 
-const server = http.createServer(function (req, res) {
-  switch (req.url) {
-    case "/":
-      tollbooth_current_user = null;
-      fs.readFile(
-        path.join(__dirname, "public", "index.html"),
-        function (err, page) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(page);
+app.get("/tollbooth_current_user", (req, res) =>
+  res.json(tollbooth_current_user)
+);
+
+app.get("/tollbooth_current_admin", (req, res) =>
+  res.json(tollbooth_current_admin)
+);
+
+app.get("/tollbooth_new_user_id", (req, res) => res.end(tollbooth_new_user_id));
+
+app.post("/api/users/login", (req, res) => {
+  tollbooth_current_user = null;
+  tollbooth_current_admin = null;
+
+  User.find().then((users) => {
+    if (
+      !users.some(
+        (user) =>
+          user.email == req.body.email && user.password == req.body.password
+      )
+    ) {
+      return res.redirect("/");
+    } else {
+      users.forEach((user) => {
+        if (
+          user.email == req.body.email &&
+          user.password == req.body.password
+        ) {
+          tollbooth_current_user = user;
+          return res.redirect("/home");
         }
-      );
-      break;
+      });
+    }
+  });
+});
 
-    case "/css/style.css":
-      fs.readFile(
-        path.join(__dirname, "public", "css", "style.css"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/css" });
-          res.end(data);
-        }
-      );
-      break;
+app.post("/api/admin/login", (req, res) => {
+  tollbooth_current_user = null;
+  tollbooth_current_admin = null;
 
-    case "/IMG/cars.jpg":
-      fs.readFile(
-        path.join(__dirname, "public", "IMG", "cars.jpg"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "image/jpg" });
-          res.end(data);
-        }
-      );
-      break;
+  Admin.find().then((admins) => {
+    admins.forEach((admin) => {
+      if (
+        admin.username == req.body.username &&
+        admin.password == req.body.password
+      ) {
+        tollbooth_current_admin = admin;
+        res.redirect("/admin/home");
+      } else {
+        res.redirect("/admin");
+      }
+    });
+  });
+});
 
-    case "/api/users/login":
-      if (req.method == "POST") {
-        let body = "";
-        req.on("data", function (data) {
-          body += data;
-        });
-        req.on("end", function () {
-          const formData = qs.parse(body);
+app.post("/api/logout", (req, res) => {
+  tollbooth_current_user = null;
+  tollbooth_current_admin = null;
+  res.end("logged out");
+});
 
-          if (
-            !users.some(function (user) {
-              return (
-                user.email == formData.email &&
-                user.password == formData.password
-              );
+app.post("/api/user/logout", (req, res) => {
+  tollbooth_current_user = null;
+  res.end("logged out");
+});
+
+app.post("/api/admin/logout", (req, res) => {
+  tollbooth_current_admin = null;
+  res.end("logged out");
+});
+
+app.post("/api/users/scan", (req, res) => {
+  const id = req.body.id;
+  const amount = Number(req.body.amount);
+
+  User.findById(id)
+    .then((user) => {
+      if (user.balance > amount) {
+        user.balance = user.balance - amount;
+        Admin.findOne().then((admin) => {
+          user.activity.unshift({
+            amount,
+            boothName: admin.boothName,
+          });
+          admin.history.push({
+            amount,
+            user,
+          });
+          admin
+            .save()
+            .then(() => {
+              user
+                .save()
+                .then(() => {
+                  res.end(String(user.balance));
+                })
+                .catch((err) => {
+                  res.status(400);
+                  res.end(`Error: ${err}`);
+                });
             })
-          ) {
-            res.statusCode = 302;
-            res.setHeader("Location", "/");
-            return res.end();
-          } else {
-            users.forEach(function (user) {
-              if (
-                user.email == formData.email &&
-                user.password == formData.password
-              ) {
-                tollbooth_current_user = user;
-                res.statusCode = 302;
-                res.setHeader("Location", "/home");
-                return res.end();
-              }
+            .catch((err) => {
+              res.status(400);
+              res.end(`Error: ${err}`);
             });
-          }
         });
+      } else {
+        res.writeHead(400);
+        res.end("Error: Insufficient Funds");
       }
-      break;
+    })
+    .catch((err) => {
+      res.status(400);
+      res.end(`Error: ${err}`);
+    });
+});
 
-    case "/home":
-      if (tollbooth_current_user == null) {
-        res.statusCode = 302;
-        res.setHeader("Location", "/");
-        return res.end();
-      }
-      fs.readFile(
-        path.join(__dirname, "public", "home", "index.html"),
-        function (err, page) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(page);
-        }
-      );
-      break;
+app.post("/api/users/topup", async (req, res) => {
+  const id = req.body.id;
+  const amount = Number(req.body.amount);
 
-    case "/css/userhome.css":
-      fs.readFile(
-        path.join(__dirname, "public", "home", "css", "userhome.css"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/css" });
-          res.end(data);
-        }
-      );
-      break;
-
-    case "/js/main.js":
-      fs.readFile(
-        path.join(__dirname, "public", "home", "js", "main.js"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/javascript" });
-          res.end(data);
-        }
-      );
-      break;
-
-    case "/tollbooth_current_user":
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(tollbooth_current_user));
-      break;
-
-    case "/admin":
-      tollbooth_current_admin = null;
-      fs.readFile(
-        path.join(__dirname, "public", "admin", "index.html"),
-        (err, page) => {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(page);
-        }
-      );
-      break;
-
-    case "/api/admin/login":
-      if (req.method == "POST") {
-        let body = "";
-        req.on("data", function (data) {
-          body += data;
-        });
-        req.on("end", function () {
-          const formData = qs.parse(body);
-
-          if (
-            admin.username != formData.username &&
-            admin.password != formData.password
-          ) {
-            res.statusCode = 302;
-            res.setHeader("Location", "/admin");
-            return res.end();
-          } else {
-            tollbooth_current_admin = admin;
-            res.statusCode = 302;
-            res.setHeader("Location", "/admin/home");
-            return res.end();
-          }
-        });
-      }
-      break;
-
-    case "/admin/home":
-      if (tollbooth_current_admin == null) {
-        res.statusCode = 302;
-        res.setHeader("Location", "/admin");
-        return res.end();
-      }
-      fs.readFile(
-        path.join(__dirname, "public", "admin", "home", "index.html"),
-        function (err, page) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(page);
-        }
-      );
-      break;
-
-    case "/admin/css/home.css":
-      fs.readFile(
-        path.join(__dirname, "public", "admin", "home", "css", "home.css"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/css" });
-          res.end(data);
-        }
-      );
-      break;
-
-    case "/admin/js/adminmain.js":
-      fs.readFile(
-        path.join(__dirname, "public", "admin", "home", "js", "adminmain.js"),
-        function (err, data) {
-          if (err) {
-            throw err;
-          }
-          res.writeHead(200, { "Content-Type": "text/javascript" });
-          res.end(data);
-        }
-      );
-      break;
-
-    case "/tollbooth_current_admin":
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(tollbooth_current_admin));
-      break;
-
-    case "/tollbooth_users":
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(users));
-      break;
-
-    default:
-      res.writeHead(404);
-      res.end("404 not found");
-      break;
+  try {
+    const user = await User.findById(id);
+    user.balance += amount;
+    user.save().then(() => res.end(String(user.balance)));
+  } catch (err) {
+    res.status(400);
+    res.end(`Error: ${err}`);
   }
+});
+
+app.get("/api/users/new/:id", (req, res) => {
+  tollbooth_new_user_id = req.params.id;
+  res.redirect("/api/users/register");
+  res.end();
+});
+
+app.get("/api/users/register/style.css", (req, res) => {
+  res.sendFile(path.join(__dirname, "register.css"));
+});
+
+app.get("/api/users/register", (req, res) => {
+  if (!tollbooth_new_user_id) res.end("Please scan card first");
+  res.sendFile(path.join(__dirname, "register.html"));
+});
+
+app.post("/api/users/register", (req, res) => {
+  const { _id, name, email, userPhone, password, regNumber } = req.body;
+
+  const newUser = new User({
+    _id,
+    name,
+    email,
+    userPhone,
+    password,
+    regNumber,
+    balance: 0.0,
+    activity: [],
+  });
+
+  newUser
+    .save()
+    .then(() => {
+      tollbooth_new_user_id = null;
+      console.log("User added");
+    })
+    .then(() => res.redirect("/"))
+    .catch((err) => res.status(400).json(`Error: ${err}`));
 });
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, function () {
-  console.log("server started at port " + PORT);
-});
+app.listen(PORT, () => console.log("server started at port " + PORT));
